@@ -1,44 +1,30 @@
+import re
+
 def extract_and_format_number(input_string):
-    # 找到第一个数字字符的位置，标志字母部分的结束
-    digit_start_index = next((i for i, c in enumerate(input_string) if c.isdigit()), -1)
-    
-    if digit_start_index == -1:
-        # 如果没有找到数字部分，直接返回"00.00"
-        return "00.00"
-    
-    # 从数字开始的位置开始找小数点
-    dot_index = input_string.find('.', digit_start_index)
-    
-    if dot_index != -1:
-        # 找到小数点，提取小数点后的数字部分，最多保留两位
-        digits = []
-        count = 0
-        for char in input_string[dot_index + 1:]:
-            if char.isdigit():
-                digits.append(char)
-                count += 1
-                if count == 2:
-                    break
-            else:
-                break
-        
-        # 如果不足两位，补足
-        while count < 2:
-            digits.append('0')
-            count += 1
-        
-        return ''.join(digits[:2])  # 只保留两位小数
-        
+    # 使用正则表达式匹配字母和数字部分
+    match = re.match(r'([a-zA-Z]+)(\d+(?:\.\d*)?)', input_string)
+
+    if match:
+        number_str = match.group(2)  # 获取数字部分的字符串
+
+        if '.' in number_str:
+            # 如果有小数点，保留两位小数但不四舍五入
+            integer_part, decimal_part = number_str.split('.')
+            formatted_number = integer_part + '.' + (decimal_part + '00')[:2]  # 截取小数点后两位
+        else:
+            # 如果没有小数点，补充两位小数
+            formatted_number = number_str + '.00'
+
+        return formatted_number
+
     else:
-        # 没有小数点，直接补"00"
-        return "00"
+        return None  # 如果没有找到匹配的模式，返回None或者适合的错误提示
 
-# 测试例子
-input1 = "abcd123.456"
-input2 = "abcd123"
+# 测试示例
+input_str1 = "abcd123.456"
+input_str2 = "abcd123"
+input_str3 = "xyz789.1"
 
-output1 = extract_and_format_number(input1)
-output2 = extract_and_format_number(input2)
-
-print(output1)  # 输出 "123.45"
-print(output2)  # 输出 "123.00"
+print(extract_and_format_number(input_str1))  # 输出: 123.45
+print(extract_and_format_number(input_str2))  # 输出: 123.00
+print(extract_and_format_number(input_str3))  # 输出: 789.10
